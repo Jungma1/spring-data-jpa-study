@@ -2,6 +2,7 @@ package study.datajpa.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,5 +122,16 @@ class MemberRepositoryTest {
 
         List<MemberDto> memberDto = memberRepository.findMemberDto();
         memberDto.forEach(System.out::println);
+    }
+
+    @Test
+    void findByNames() {
+        Member member1 = new Member("AAA", 10);
+        Member member2 = new Member("BBB", 20);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+        result.forEach(System.out::println);
     }
 }
