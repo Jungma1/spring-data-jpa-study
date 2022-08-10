@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +30,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -168,5 +173,30 @@ class MemberRepositoryTest {
         assertThat(page.getTotalPages()).isEqualTo(2);
         assertThat(page.isFirst()).isTrue();
         assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    void bulkUpdate() {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        // 벌크 연산은 영속성 컨텍스트를 무시하고 업데이트 쿼리문을 DB에 직접 실행하기 때문에 영속성 컨텍스트를 초기화 해야 함
+        // 스프링 데이터 JPA 에서는 @Modifying(clearAutomatically = true) 옵션을 활성화하면 자동으로 초기화가 됨
+//        em.clear();
+
+        // 영속성 컨텍스트가 초기화 되었기 때문에 DB 에서 직접 조회하여 결과를 보여줌
+        List<Member> findMembers = memberRepository.findByUsername("member5");
+        Member member5 = findMembers.get(0);
+        System.out.println("member5 = " + member5);
+
+        // then
+        assertThat(resultCount).isEqualTo(3);
     }
 }
