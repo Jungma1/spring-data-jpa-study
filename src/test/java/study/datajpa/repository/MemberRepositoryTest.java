@@ -258,4 +258,36 @@ class MemberRepositoryTest {
     void callCustom() {
         List<Member> result = memberRepository.findMemberCustom();
     }
+
+    @Test
+    void projections() {
+        // given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member member1 = new Member("member1", 0, teamA);
+        Member member2 = new Member("member2", 0, teamA);
+        em.persist(member1);
+        em.persist(member2);
+
+        em.flush();
+        em.clear();
+
+        // when
+        List<UsernameOnly> result = memberRepository.findProjectionsByUsername("member1");
+        List<UsernameOnlyDto> resultDto = memberRepository.findProjectionsDtoByUsername("member1");
+        List<UsernameOnly> resultType = memberRepository.findProjectionsTypeByUsername("member1", UsernameOnly.class);
+
+        for (UsernameOnly usernameOnly : result) {
+            System.out.println("usernameOnly = " + usernameOnly.getUsername());
+        }
+
+        List<NestedClosedProjections> resultTeam = memberRepository.findProjectionsTypeByUsername("member1",
+                NestedClosedProjections.class);
+
+        for (NestedClosedProjections nestedClosedProjections : resultTeam) {
+            System.out.println("nestedClosedProjections = " + nestedClosedProjections.getUsername());
+            System.out.println("nestedClosedProjections = " + nestedClosedProjections.getTeam().getName());
+        }
+    }
 }
